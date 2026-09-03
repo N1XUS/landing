@@ -11,7 +11,26 @@ npm run dev       # start the Vite dev server (SSR)
 npm test          # run the Vitest suite
 npm run build     # type-check and build client + server for production
 npm run preview   # build and preview the production bundle locally
+npm run images    # rebuild public/img from media/ (renders, screenshots, logo)
 ```
+
+## Images
+
+- `media/` (untracked): source PNGs — codex-generated renders in
+  `media/renders/`, Malva UI captures in `media/shots/`.
+- `public/img/`: AVIF + WebP variants built by `scripts/images.mjs`.
+  Renders get their studio ground flat-fielded to pure black / white so
+  `mix-blend-mode: screen` / `multiply` hides it without a visible slab.
+  A complete run prunes stale variants.
+- `public/og.jpg`: social card, rendered from `scripts/og.html` at
+  1200x630 in headless Chrome.
+
+## Theme
+
+- Dark by default, light via `[data-theme=light]` tokens in `src/global.css`.
+- No stored choice = follows `prefers-color-scheme`; the header switcher
+  stores `theme` in localStorage. `src/lib/theme.ts` holds the resolver
+  and the pre-paint script inlined in `src/root.tsx`.
 
 ## Deployment
 

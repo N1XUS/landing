@@ -131,7 +131,8 @@ export const About = component$(() => {
           <p class="about-now">
             <span class="mono-label">Currently</span>
             <span class="now-value">
-              Engineering AI-driven products at PeakVentures.
+              Engineering AI-driven products at PeakVentures. Building Malva
+              UI in the open.
             </span>
           </p>
         </div>

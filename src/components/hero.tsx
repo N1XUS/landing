@@ -18,51 +18,88 @@ const styles = `
   align-content: center;
   overflow: hidden;
 }
-/* Subtle accent wash centered on the top-left corner, half clipped by
-   the section — mirrors the work cards' corner glows. */
-.hero::before {
+/* Accent wash on the top-left corner, half clipped by the section, and a
+   coral counterpart bottom-right where the render's light leak lands. */
+.hero::before,
+.hero::after {
   content: '';
   position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.hero::before {
   left: 0;
   top: 0;
   width: clamp(700px, 90vw, 1600px);
-  aspect-ratio: 1;
   transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--accent) 13%, transparent) 0%,
-    transparent 68%
-  );
-  pointer-events: none;
+  background: radial-gradient(circle, var(--glow-1) 0%, transparent 68%);
 }
-.hero-beam {
+.hero::after {
+  right: 0;
+  bottom: 0;
+  width: clamp(500px, 60vw, 1100px);
+  transform: translate(35%, 45%);
+  background: radial-gradient(circle, var(--glow-2) 0%, transparent 66%);
+}
+/* The blueprint-to-glass render. Its ground is flattened to pure black /
+   white by the image pipeline and blended away (--render-blend), so only
+   the structure floats over the page. The element is the image's own 3:2
+   box, masked on all four edges, so the frame can't show on any viewport
+   proportion; on phones the fade also clears the left where the name sits. */
+.hero-render {
   position: absolute;
-  top: 0;
-  /* Mobile: stay inside the container's side gutter (percentage of the
-     viewport, capped at the gutter width) so the line never crosses the
-     text column. */
-  right: min(4%, 1.25rem);
-  width: 1px;
-  height: 100%;
-  background: linear-gradient(180deg, transparent, var(--accent) 35%, var(--accent-bright) 55%, transparent 85%);
-  opacity: 0.7;
+  top: 3%;
+  right: -22vw;
+  height: 42%;
+  aspect-ratio: 3 / 2;
+  z-index: 0;
   pointer-events: none;
+  mix-blend-mode: var(--render-blend);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-image: url(/img/hero-dark-960.webp);
+  background-image: image-set(
+    url(/img/hero-dark-960.avif) type("image/avif"),
+    url(/img/hero-dark-960.webp) type("image/webp")
+  );
+  /* Phones: keep the glass at the top right and let the wireframe half
+     dissolve before it reaches the name. */
+  mask-image: radial-gradient(74% 76% at 72% 30%, #000 22%, transparent 66%);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+  will-change: transform;
+}
+:root[data-theme='light'] .hero-render {
+  background-image: url(/img/hero-light-960.webp);
+  background-image: image-set(
+    url(/img/hero-light-960.avif) type("image/avif"),
+    url(/img/hero-light-960.webp) type("image/webp")
+  );
 }
 @media (min-width: 768px) {
-  .hero-beam { right: clamp(1rem, 12vw, 14rem); }
+  .hero-render {
+    top: 6%;
+    right: -6vw;
+    height: 88%;
+    background-image: url(/img/hero-dark-1536.webp);
+    background-image: image-set(
+      url(/img/hero-dark-1536.avif) type("image/avif"),
+      url(/img/hero-dark-1536.webp) type("image/webp")
+    );
+    mask-image:
+      linear-gradient(90deg, transparent 4%, #000 26%, #000 90%, transparent 100%),
+      linear-gradient(180deg, transparent 0%, #000 8%, #000 82%, transparent 100%);
+  }
+  :root[data-theme='light'] .hero-render {
+    background-image: url(/img/hero-light-1536.webp);
+    background-image: image-set(
+      url(/img/hero-light-1536.avif) type("image/avif"),
+      url(/img/hero-light-1536.webp) type("image/webp")
+    );
+  }
 }
-.hero-beam::after {
-  content: '';
-  position: absolute;
-  top: 42%;
-  left: -3px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--accent-bright);
-  box-shadow: 0 0 24px 4px color-mix(in srgb, var(--accent-hover) 65%, transparent);
-}
+.hero-content { position: relative; z-index: 1; }
 .hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -154,19 +191,20 @@ const styles = `
   font-size: 0.75rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  z-index: 1;
 }
-/* Stage the name's entrance before hydration so it never flashes fully
-   rendered and then re-animates. Gated on html.js (set pre-paint in root)
-   and motion preference, so no-JS visitors and reduced-motion users always
-   see the name. The GSAP timeline tweens these to their final values. */
+/* Stage the entrance before hydration so nothing flashes fully rendered
+   and then re-animates. Gated on html.js (set pre-paint in root) and
+   motion preference, so no-JS visitors and reduced-motion users always
+   see everything. The GSAP timeline tweens these to their final values. */
 @media (prefers-reduced-motion: no-preference) {
   html.js .hero:not(.is-in) .sl-letter {
     opacity: 0;
     filter: blur(6px);
     transform: translateY(0.4em);
   }
-  html.js .hero:not(.is-in) .hero-beam {
-    opacity: 0;
+  html.js .hero:not(.is-in) .hero-render {
+    clip-path: inset(0 100% 0 0);
   }
 }
 `;
@@ -190,16 +228,21 @@ export const Hero = component$(() => {
           onComplete: () => {
             root.value?.classList.add("is-in");
             gsap.set(".sl-letter", { clearProps: "opacity,filter,transform" });
+            gsap.set(".hero-render", { clearProps: "clipPath" });
           },
         })
-        // fromTo with explicit end values: the CSS-staged initial states
-        // (html.js rules above) would corrupt plain .from() targets.
+        // The render resolves left-to-right, wireframe first, then glass —
+        // the same direction the image itself reads.
         .fromTo(
-          ".hero-beam",
-          { opacity: 0, scaleY: 0.6, transformOrigin: "top" },
-          { opacity: 0.7, scaleY: 1, duration: 1 },
+          ".hero-render",
+          { clipPath: "inset(0 100% 0 0)" },
+          {
+            clipPath: "inset(0 0% 0 0)",
+            duration: 1.6,
+            ease: "power3.inOut",
+          },
         )
-        .from(".hero-eyebrow", { opacity: 0, y: 12, duration: 0.4 }, "-=0.6")
+        .from(".hero-eyebrow", { opacity: 0, y: 12, duration: 0.4 }, "-=1.2")
         .fromTo(
           ".sl-letter",
           { opacity: 0, y: "0.4em", filter: "blur(6px)" },
@@ -239,8 +282,8 @@ export const Hero = component$(() => {
         ease: "none",
         scrollTrigger: scrub,
       });
-      gsap.to(".hero-beam", {
-        yPercent: 18,
+      gsap.to(".hero-render", {
+        yPercent: 22,
         ease: "none",
         scrollTrigger: scrub,
       });
@@ -251,9 +294,13 @@ export const Hero = component$(() => {
       });
     }, root.value);
 
+    const fine = window.matchMedia(
+      "(hover: hover) and (pointer: fine)",
+    ).matches;
+
     // Cursor-proximity variable weight on the name (desktop fine-pointer only).
     let removeWeightFx: (() => void) | undefined;
-    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    if (fine) {
       const name = root.value.querySelector<HTMLElement>(".hero-name");
       const letters = Array.from(
         root.value.querySelectorAll<HTMLElement>(".hn-line .sl-letter"),
@@ -320,15 +367,49 @@ export const Hero = component$(() => {
       }
     }
 
+    // The render drifts a few pixels against the cursor: enough depth to
+    // read as an object in the room, not a sticker on the page.
+    let removeTilt: (() => void) | undefined;
+    if (fine) {
+      const render = root.value.querySelector<HTMLElement>(".hero-render");
+      if (render) {
+        const xTo = gsap.quickTo(render, "x", {
+          duration: 0.9,
+          ease: "power3.out",
+        });
+        const yTo = gsap.quickTo(render, "y", {
+          duration: 0.9,
+          ease: "power3.out",
+        });
+        const onMove = (e: MouseEvent) => {
+          const nx = e.clientX / window.innerWidth - 0.5;
+          const ny = e.clientY / window.innerHeight - 0.5;
+          xTo(nx * -18);
+          yTo(ny * -12);
+        };
+        const onLeave = () => {
+          xTo(0);
+          yTo(0);
+        };
+        root.value.addEventListener("mousemove", onMove);
+        root.value.addEventListener("mouseleave", onLeave);
+        removeTilt = () => {
+          root.value?.removeEventListener("mousemove", onMove);
+          root.value?.removeEventListener("mouseleave", onLeave);
+        };
+      }
+    }
+
     cleanup(() => {
       removeWeightFx?.();
+      removeTilt?.();
       ctx.revert();
     });
   });
 
   return (
     <section class="hero" ref={root}>
-      <div class="hero-beam" aria-hidden="true" />
+      <div class="hero-render" aria-hidden="true" />
       <div class="container hero-content">
         <p class="hero-eyebrow">
           <EyebrowMark />

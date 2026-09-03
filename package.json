@@ -22,7 +22,8 @@
     "preview": "qwik build preview && vite preview --open",
     "start": "vite --open --mode ssr",
     "qwik": "qwik",
-    "test": "vitest run"
+    "test": "vitest run",
+    "images": "node scripts/images.mjs"
   },
   "devDependencies": {
     "@builder.io/qwik": "^1.20.0",

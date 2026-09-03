@@ -2,6 +2,7 @@ import { component$ } from "@builder.io/qwik";
 import { QwikCityProvider, RouterOutlet } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
 import { assetPath } from "./lib/assets";
+import { PREPAINT_SCRIPT, THEME_COLORS } from "./lib/theme";
 
 import "./global.css";
 
@@ -21,6 +22,11 @@ export default component$(() => {
             entrance-animation initial states without hiding content from
             no-JS visitors (crawlers, reader modes). */}
         <script dangerouslySetInnerHTML="document.documentElement.classList.add('js')" />
+        {/* theme-color must precede the pre-paint script, which rewrites it. */}
+        <meta name="theme-color" content={THEME_COLORS.dark} />
+        {/* Resolves stored/OS theme onto <html data-theme> before first
+            paint so the SSR'd page never flashes the wrong theme. */}
+        <script dangerouslySetInnerHTML={PREPAINT_SCRIPT} />
         <link rel="icon" href={assetPath("favicon.ico")} sizes="32x32" />
         <link
           rel="icon"
@@ -29,7 +35,6 @@ export default component$(() => {
           sizes="192x192"
         />
         <link rel="apple-touch-icon" href={assetPath("apple-touch-icon.png")} />
-        <meta name="theme-color" content="#171717" />
         <RouterHead />
       </head>
       <body lang="en">

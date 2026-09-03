@@ -107,7 +107,7 @@ export const Skills = component$(() => {
 
   return (
     <section class="skills container" ref={root}>
-      <SectionHeading num="02" title="Skills" id="skills" />
+      <SectionHeading num="03" title="Skills" id="skills" />
       <p class="skills-intro">
         The stack I build and ship with — refined over a decade of production
         work, from enterprise component libraries to event-driven back ends.

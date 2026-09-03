@@ -1,22 +1,87 @@
-@import '@fontsource-variable/inter';
-@import '@fontsource-variable/space-grotesk';
-@import '@fontsource-variable/jetbrains-mono';
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/space-grotesk";
+@import "@fontsource-variable/jetbrains-mono";
 
+/* Palette: Malva/Lumina tokens (../angular-ui-lib theme.scss). Dark is the
+   default; light mirrors Lumina's :root theme. Accent roles invert between
+   themes so "bright" always means "readable on this background". */
 :root {
   --bg: #171717;
   --bg-sunken: #0a0a0a;
+  --bg-raised: #1c1c1c;
+  --card-bg: var(--bg-sunken);
   --text: #fafafa;
   --muted: #a3a3a3;
   --accent: #526ed3;
   --accent-hover: #6887e4;
   --accent-deep: #2d409c;
   --accent-bright: #8eaaf0;
+  /* Coral, Lumina's second accent. Decorative (gradients, glows) in both
+     themes; only --accent-2-text is safe for type. */
+  --accent-2: #fd774d;
+  --accent-2-bright: #fea882;
+  --accent-2-text: #fea882;
+  --violet: #a78bfa;
+  --spectrum: linear-gradient(
+    90deg,
+    var(--accent-bright) 0%,
+    var(--violet) 50%,
+    var(--accent-2-bright) 100%
+  );
   --line: rgba(255, 255, 255, 0.08);
   --hairline: var(--line);
-  --font-display: 'Space Grotesk Variable', system-ui, sans-serif;
-  --font-body: 'Inter Variable', system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --ghost-stroke: rgba(250, 250, 250, 0.09);
+  --grid-line: rgba(82, 110, 211, 0.055);
+  --glass: rgba(23, 23, 23, 0.7);
+  --grain-opacity: 0.05;
+  --grain-blend: normal;
+  --glow-1: color-mix(in srgb, var(--accent) 14%, transparent);
+  --glow-2: color-mix(in srgb, var(--accent-2) 12%, transparent);
+  --frame-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--line);
+  /* Renders ship on a near-black (dark) / off-white (light) ground; this
+     blend makes that ground vanish into the page so only the glass shows. */
+  --render-blend: screen;
+  --font-display: "Space Grotesk Variable", system-ui, sans-serif;
+  --font-body: "Inter Variable", system-ui, sans-serif;
+  --font-mono:
+    "JetBrains Mono Variable", ui-monospace, SFMono-Regular, Menlo, monospace;
   --header-h: 64px;
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --bg: #fafafa;
+  --bg-sunken: #f0f0f0;
+  --bg-raised: #ffffff;
+  --card-bg: #ffffff;
+  --text: #171717;
+  --muted: #525252;
+  --accent: #526ed3;
+  --accent-hover: #4359b1;
+  --accent-deep: #bacbf4;
+  --accent-bright: #4359b1;
+  --accent-2: #fd774d;
+  --accent-2-bright: #f45728;
+  --accent-2-text: #c2360f;
+  --violet: #7c5ce6;
+  --spectrum: linear-gradient(
+    90deg,
+    var(--accent) 0%,
+    var(--violet) 50%,
+    var(--accent-2) 100%
+  );
+  --line: rgba(0, 0, 0, 0.09);
+  --ghost-stroke: rgba(23, 23, 23, 0.1);
+  --grid-line: rgba(82, 110, 211, 0.09);
+  --glass: rgba(250, 250, 250, 0.72);
+  --grain-opacity: 0.08;
+  --grain-blend: multiply;
+  --glow-1: color-mix(in srgb, var(--accent) 10%, transparent);
+  --glow-2: color-mix(in srgb, var(--accent-2) 9%, transparent);
+  --frame-shadow:
+    0 40px 80px -30px rgba(23, 23, 23, 0.35), 0 0 0 1px var(--line);
+  --render-blend: multiply;
+  color-scheme: light;
 }
 
 *,
@@ -56,7 +121,7 @@ body {
 
 ::selection {
   background: var(--accent);
-  color: var(--text);
+  color: #fafafa;
 }
 
 a {
@@ -66,6 +131,11 @@ a {
 
 a:hover {
   color: var(--accent-hover);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-bright);
+  outline-offset: 4px;
 }
 
 img {
@@ -86,10 +156,10 @@ img {
   pointer-events: none;
   background-image: repeating-linear-gradient(
     90deg,
-    rgba(82, 110, 211, 0.055) 0 1px,
+    var(--grid-line) 0 1px,
     transparent 1px 120px
   );
-  mask-image: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(0,0,0,0.45));
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.45));
 }
 
 .bg-grain {
@@ -97,7 +167,8 @@ img {
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.05;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: var(--grain-blend);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
@@ -113,9 +184,35 @@ img {
   color: var(--accent-bright);
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: var(--font-display);
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.02em;
+}
+
+/* Theme switch: the new theme sweeps out from the switcher as a circle
+   (View Transitions API). --vt-x/--vt-y are set on <html> by the toggle. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  animation: theme-reveal 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--vt-x, 100%) var(--vt-y, 0));
+  }
+  to {
+    clip-path: circle(150vmax at var(--vt-x, 100%) var(--vt-y, 0));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }

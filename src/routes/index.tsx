@@ -1,6 +1,7 @@
 import { component$ } from "@builder.io/qwik";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { About } from "../components/about";
+import { Building } from "../components/building";
 import { Contact } from "../components/contact";
 import { Header } from "../components/header";
 import { Hero } from "../components/hero";
@@ -16,6 +17,7 @@ export default component$(() => {
       <main>
         <Hero />
         <About />
+        <Building />
         <Skills />
         <Work />
         <Contact />
@@ -30,7 +32,7 @@ export const head: DocumentHead = {
     {
       name: "description",
       content:
-        "Full-stack product engineer shipping production-grade web platforms, enterprise UI systems, and AI features from prototype to production.",
+        "Full-stack product engineer shipping production-grade web platforms, enterprise UI systems, and AI features from prototype to production. Building Malva UI, an open-source Angular component library.",
     },
     { property: "og:title", content: "Denys Severyn — Full-Stack Engineer" },
     {
@@ -39,6 +41,9 @@ export const head: DocumentHead = {
         "Production-grade platforms, enterprise UI systems, and AI product delivery from prototype to production.",
     },
     { property: "og:type", content: "website" },
-    { property: "og:image", content: "https://severyn.pro/icon-512.png" },
+    { property: "og:image", content: "https://severyn.pro/og.jpg" },
+    { property: "og:image:width", content: "1200" },
+    { property: "og:image:height", content: "630" },
+    { name: "twitter:card", content: "summary_large_image" },
   ],
 };

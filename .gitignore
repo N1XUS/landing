@@ -43,3 +43,7 @@ lerna-debug.log*
 
 .superpowers/
 .claude/settings.local.json
+
+# Source renders/screenshots (large PNGs); optimized outputs live in public/img
+/media
+/tmp

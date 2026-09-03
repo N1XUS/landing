@@ -8,48 +8,71 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { prefersReducedMotion } from "../lib/motion";
 import { SectionHeading } from "./section-heading";
-import { MotifGrid, MotifPeaks, MotifStack, MotifNet } from "./project-motifs";
 import { ExternalArrow, SeparatorMark } from "./inline-icons";
+
+type Cover = "strata" | "peaks" | "grid" | "net";
+const COVERS: Cover[] = ["strata", "peaks", "grid", "net"];
+
+/** image-set() for one cover render; falls back to plain WebP. */
+const coverImage = (cover: Cover, theme: "dark" | "light") => {
+  const base = `/img/cover-${cover}-${theme}-1024`;
+  return `background-image: url(${base}.webp);
+  background-image: image-set(url(${base}.avif) type("image/avif"), url(${base}.webp) type("image/webp"));`;
+};
 
 const styles = `
 .work-cards { display: grid; gap: 2.5rem; }
 .work-card {
   position: sticky;
   top: calc(var(--header-h) + 2rem);
-  background: var(--bg-sunken);
+  display: grid;
+  gap: 1.75rem;
+  background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: 1rem;
-  padding: 2rem 1.5rem;
+  padding: 1.5rem;
   transform-origin: center top;
   will-change: transform;
   overflow: hidden;
 }
+.wc-body { position: relative; z-index: 1; min-width: 0; }
 .wc-index {
   position: absolute;
   top: 0.5rem;
   right: 1.25rem;
+  z-index: 1;
   font-family: var(--font-display);
   font-size: clamp(4rem, 10vw, 7rem);
   font-weight: 700;
   line-height: 1;
   color: transparent;
-  -webkit-text-stroke: 1px rgba(250, 250, 250, 0.09);
+  -webkit-text-stroke: 1px var(--ghost-stroke);
   pointer-events: none;
   user-select: none;
 }
-.wc-motif {
-  position: absolute;
-  right: 1.5rem;
-  bottom: 1.25rem;
-  width: clamp(110px, 22vw, 200px);
-  opacity: 0.8;
-  pointer-events: none;
+/* Cover render: square, its ground blended away so the glass sits on the
+   card's own surface. */
+.wc-cover {
+  position: relative;
+  z-index: 1;
+  aspect-ratio: 16 / 10;
+  border-radius: 0.75rem;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  mix-blend-mode: var(--render-blend);
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
 }
+${COVERS.map(
+  (c) => `
+.work-card[data-cover='${c}'] .wc-cover { ${coverImage(c, "dark")} }
+:root[data-theme='light'] .work-card[data-cover='${c}'] .wc-cover { ${coverImage(c, "light")} }`,
+).join("")}
 .wc-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.5rem;
 }
 .wc-tags span {
   font-family: var(--font-mono);
@@ -107,8 +130,8 @@ const styles = `
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9375rem;
-  /* --accent (the global anchor default) is 4.27:1 on --bg-sunken, just
-     under AA's 4.5:1. --accent-bright clears it comfortably (~8.6:1). */
+  /* --accent (the global anchor default) is 4.27:1 on the dark card, just
+     under AA's 4.5:1. --accent-bright clears it in both themes. */
   color: var(--accent-bright);
 }
 .wc-link .external-mark {
@@ -123,55 +146,55 @@ const styles = `
 .wc-dim {
   position: absolute;
   inset: 0;
-  background: var(--bg-sunken);
+  z-index: 2;
+  background: var(--card-bg);
   border-radius: inherit;
   opacity: 0;
   pointer-events: none;
 }
-/* Accent glows centered on opposite corners so half of each is clipped
-   away by the card's overflow. Top-left one is 2x the bottom-right. */
-.work-card::before {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  width: clamp(280px, 42%, 520px);
-  aspect-ratio: 1;
-  transform: translate(50%, 50%);
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--accent) 14%, transparent) 0%,
-    transparent 68%
-  );
-  pointer-events: none;
-}
+/* Glows centered on opposite corners so half of each is clipped away by
+   the card's overflow: accent top-left, coral bottom-right under the
+   render's light leak. */
+.work-card::before,
 .work-card::after {
   content: '';
   position: absolute;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.work-card::before {
+  right: 0;
+  bottom: 0;
+  width: clamp(320px, 48%, 620px);
+  transform: translate(45%, 45%);
+  background: radial-gradient(circle, var(--glow-2) 0%, transparent 66%);
+}
+.work-card::after {
   left: 0;
   top: 0;
   width: clamp(560px, 84%, 1040px);
-  aspect-ratio: 1;
   transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    color-mix(in srgb, var(--accent) 14%, transparent) 0%,
-    transparent 68%
-  );
-  pointer-events: none;
+  background: radial-gradient(circle, var(--glow-1) 0%, transparent 68%);
 }
 @media (min-width: 768px) {
-  .work-card { padding: 3rem; }
+  .work-card {
+    grid-template-columns: minmax(0, 1fr) clamp(220px, 30vw, 360px);
+    align-items: center;
+    gap: 3rem;
+    padding: 3rem;
+  }
+  .wc-cover { aspect-ratio: 1; }
 }
 @media (hover: hover) {
   .work-card { transition: border-color 0.3s; }
   .work-card:hover { border-color: var(--accent-deep); }
+  .work-card:hover .wc-cover { transform: scale(1.04); }
   .wc-link:hover { color: var(--text); }
 }
-@media (max-width: 767px) {
-  .wc-motif { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .wc-cover { transition: none; }
+  .work-card:hover .wc-cover { transform: none; }
 }
 `;
 
@@ -182,7 +205,7 @@ interface Project {
   href: string;
   linkLabel: string;
   meta: { role: string; stack: string[]; focus: string };
-  Motif: typeof MotifGrid;
+  cover: Cover;
 }
 
 // Chronological: earliest engagement first, current role last.
@@ -198,7 +221,7 @@ const PROJECTS: Project[] = [
       stack: ["Full-stack", "APIs"],
       focus: "Ship end to end",
     },
-    Motif: MotifNet,
+    cover: "net",
   },
   {
     title: "Apptimized",
@@ -211,7 +234,7 @@ const PROJECTS: Project[] = [
       stack: ["C#", "TypeScript"],
       focus: "Platform delivery",
     },
-    Motif: MotifStack,
+    cover: "strata",
   },
   {
     title: "Enterprise UI systems",
@@ -224,7 +247,7 @@ const PROJECTS: Project[] = [
       stack: ["TypeScript", "SCSS"],
       focus: "Components & theming",
     },
-    Motif: MotifGrid,
+    cover: "grid",
   },
   {
     title: "PeakVentures",
@@ -237,7 +260,7 @@ const PROJECTS: Project[] = [
       stack: ["TS", "Vue", "Node", "AI", "C#"],
       focus: "Product platforms",
     },
-    Motif: MotifPeaks,
+    cover: "peaks",
   },
 ];
 
@@ -284,54 +307,54 @@ export const Work = component$(() => {
 
   return (
     <section class="work container" ref={root}>
-      <SectionHeading num="03" title="Selected Work" id="work" />
+      <SectionHeading num="04" title="Selected Work" id="work" />
       <div class="work-cards">
         {PROJECTS.map((p, i) => (
-          <article class="work-card" key={p.title}>
+          <article class="work-card" key={p.title} data-cover={p.cover}>
             <span class="wc-index" aria-hidden="true">
               {String(i + 1).padStart(2, "0")}
             </span>
-            <div class="wc-motif">
-              <p.Motif />
+            <div class="wc-body">
+              <div class="wc-tags">
+                {p.tags.map((t) => (
+                  <span key={t}>{t}</span>
+                ))}
+              </div>
+              <h3 class="wc-title">{p.title}</h3>
+              <p class="wc-desc">{p.desc}</p>
+              <dl class="wc-meta">
+                <div>
+                  <dt>Role</dt>
+                  <dd>{p.meta.role}</dd>
+                </div>
+                <div>
+                  <dt>Stack</dt>
+                  <dd class="wc-stack">
+                    {p.meta.stack.map((item, index) => (
+                      <span class="wc-stack-item" key={item}>
+                        {index > 0 && <SeparatorMark />}
+                        <span>{item}</span>
+                      </span>
+                    ))}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Focus</dt>
+                  <dd>{p.meta.focus}</dd>
+                </div>
+              </dl>
+              <a
+                class="wc-link"
+                href={p.href}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span>{p.linkLabel}</span>
+                <ExternalArrow />
+              </a>
             </div>
-            <div class="wc-tags">
-              {p.tags.map((t) => (
-                <span key={t}>{t}</span>
-              ))}
-            </div>
-            <h3 class="wc-title">{p.title}</h3>
-            <p class="wc-desc">{p.desc}</p>
-            <dl class="wc-meta">
-              <div>
-                <dt>Role</dt>
-                <dd>{p.meta.role}</dd>
-              </div>
-              <div>
-                <dt>Stack</dt>
-                <dd class="wc-stack">
-                  {p.meta.stack.map((item, index) => (
-                    <span class="wc-stack-item" key={item}>
-                      {index > 0 && <SeparatorMark />}
-                      <span>{item}</span>
-                    </span>
-                  ))}
-                </dd>
-              </div>
-              <div>
-                <dt>Focus</dt>
-                <dd>{p.meta.focus}</dd>
-              </div>
-            </dl>
+            <div class="wc-cover" aria-hidden="true" />
             <div class="wc-dim" aria-hidden="true" />
-            <a
-              class="wc-link"
-              href={p.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span>{p.linkLabel}</span>
-              <ExternalArrow />
-            </a>
           </article>
         ))}
       </div>

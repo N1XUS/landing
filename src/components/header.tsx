@@ -15,6 +15,13 @@ import {
   stopScroll,
 } from "../lib/motion";
 import { assetPath } from "../lib/assets";
+import {
+  applyTheme,
+  persistTheme,
+  readStoredTheme,
+  resolveTheme,
+  type Theme,
+} from "../lib/theme";
 
 const styles = `
 .site-header {
@@ -25,11 +32,20 @@ const styles = `
   width: 100%;
   z-index: 100;
   height: var(--header-h);
-  background: rgba(23, 23, 23, 0.7);
+  background: var(--glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid transparent;
-  transition: top 0.35s, width 0.35s, border-radius 0.35s, border-color 0.35s;
+  padding-inline: 0;
+  /* Every property that changes between states is listed, on one curve,
+     so collapsing and expanding read as a single movement. */
+  transition:
+    top 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    width 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    border-radius 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    border-color 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    padding 0.5s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.35s;
 }
 .site-header.scrolled {
   top: 0.75rem;
@@ -48,19 +64,61 @@ const styles = `
   justify-content: space-between;
 }
 .header-logo img { height: 32px; width: auto; }
+:root[data-theme='light'] .logo-on-dark { display: none; }
+:root:not([data-theme='light']) .logo-on-light { display: none; }
 .header-nav { display: none; }
-.menu-btn {
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-right: -0.5rem;
+}
+.icon-btn {
   display: grid;
   place-items: center;
   width: 44px;
   height: 44px;
   background: none;
   border: 0;
+  border-radius: 999px;
   color: var(--text);
   cursor: pointer;
   font: inherit;
-  margin-right: -1rem;
+  padding: 0;
 }
+@media (hover: hover) {
+  .icon-btn { transition: background-color 0.2s; }
+  .icon-btn:hover { background: color-mix(in srgb, var(--text) 8%, transparent); }
+}
+/* Sun/moon: one disc; the mask disc slides in to bite a crescent out of
+   it, the rays scale away. Driven purely by [data-theme] so it stays in
+   sync with the pre-paint script and with OS changes. */
+.theme-icon { width: 20px; height: 20px; overflow: visible; }
+.theme-icon .ti-disc {
+  fill: currentColor;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.theme-icon .ti-bite {
+  transform: translate(9px, -9px);
+  transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.theme-icon .ti-rays {
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s;
+}
+:root[data-theme='light'] .theme-icon .ti-disc { transform: scale(1.15); }
+:root[data-theme='light'] .theme-icon .ti-bite { transform: translate(3px, -3px); }
+:root[data-theme='light'] .theme-icon .ti-rays { transform: scale(0.4) rotate(45deg); opacity: 0; }
+@media (prefers-reduced-motion: reduce) {
+  .theme-icon .ti-disc, .theme-icon .ti-bite, .theme-icon .ti-rays { transition: none; }
+}
+.menu-btn { margin-right: 0; }
 .mobile-menu {
   position: fixed;
   inset: 0;
@@ -97,6 +155,7 @@ const styles = `
 .mobile-menu.open a:nth-child(2) { transition-delay: 0.22s; }
 .mobile-menu.open a:nth-child(3) { transition-delay: 0.28s; }
 .mobile-menu.open a:nth-child(4) { transition-delay: 0.34s; }
+.mobile-menu.open a:nth-child(5) { transition-delay: 0.4s; }
 .burger { display: block; }
 .burger line {
   stroke: currentColor;
@@ -118,7 +177,7 @@ const styles = `
   .mobile-menu a { opacity: 1; translate: none; }
 }
 @media (min-width: 768px) {
-  .header-nav { display: flex; gap: 2.5rem; }
+  .header-nav { display: flex; gap: 2.25rem; }
   .header-nav a {
     position: relative;
     color: var(--muted);
@@ -135,7 +194,7 @@ const styles = `
     bottom: -4px;
     width: 100%;
     height: 1px;
-    background: var(--accent-bright);
+    background: var(--spectrum);
     transform: scaleX(0);
     transform-origin: left center;
     transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1);
@@ -144,6 +203,7 @@ const styles = `
     .header-nav a:hover::after { transform: scaleX(1); }
   }
   .menu-btn { display: none; }
+  .header-actions { margin-left: 2.25rem; margin-right: -0.75rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .header-nav a::after { transition: none; }
@@ -152,6 +212,7 @@ const styles = `
 
 const LINKS = [
   { href: "#about", label: "About" },
+  { href: "#building", label: "Building" },
   { href: "#skills", label: "Skills" },
   { href: "#work", label: "Work" },
   { href: "#contact", label: "Contact" },
@@ -161,16 +222,69 @@ export const Header = component$(() => {
   useStyles$(styles);
   const scrolled = useSignal(false);
   const menuOpen = useSignal(false);
+  // Mirrors <html data-theme>; only used for the switcher's label.
+  const theme = useSignal<Theme>("dark");
   const menuBtnRef = useSignal<HTMLButtonElement>();
+  const themeBtnRef = useSignal<HTMLButtonElement>();
   const firstLinkRef = useSignal<HTMLAnchorElement>();
   const lastLinkRef = useSignal<HTMLAnchorElement>();
 
   useOnWindow(
     "scroll",
     $(() => {
-      scrolled.value = window.scrollY > 32;
+      // Hysteresis: collapse past 48px, expand only once back under 12px.
+      // A single threshold flips the class mid-lerp while Lenis eases the
+      // page back to the top, which restarts the transition and reads as a
+      // snap.
+      const y = window.scrollY;
+      if (y > 48) scrolled.value = true;
+      else if (y < 12) scrolled.value = false;
     }),
   );
+
+  // Read the theme the pre-paint script resolved, and keep following the
+  // OS while the visitor has not made an explicit choice.
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ cleanup }) => {
+    theme.value = resolveTheme(
+      document.documentElement.dataset.theme,
+      window.matchMedia("(prefers-color-scheme: dark)").matches,
+    );
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => {
+      if (readStoredTheme(localStorage)) return;
+      const next = resolveTheme(null, e.matches);
+      applyTheme(document, next);
+      theme.value = next;
+    };
+    mq.addEventListener("change", onChange);
+    cleanup(() => mq.removeEventListener("change", onChange));
+  });
+
+  const toggleTheme = $(() => {
+    const next: Theme = theme.value === "dark" ? "light" : "dark";
+    persistTheme(localStorage, next);
+    const root = document.documentElement;
+    const btn = themeBtnRef.value;
+    if (btn) {
+      // Origin of the circular reveal (see ::view-transition-new in global.css).
+      const r = btn.getBoundingClientRect();
+      root.style.setProperty("--vt-x", `${r.left + r.width / 2}px`);
+      root.style.setProperty("--vt-y", `${r.top + r.height / 2}px`);
+    }
+    const apply = () => {
+      applyTheme(document, next);
+      theme.value = next;
+    };
+    const doc = document as Document & {
+      startViewTransition?: (cb: () => void) => unknown;
+    };
+    if (doc.startViewTransition && !prefersReducedMotion()) {
+      doc.startViewTransition(apply);
+    } else {
+      apply();
+    }
+  });
 
   // While the menu is open: lock page scroll, focus the first link, and trap
   // Tab/Escape inside it with a plain (non-QRL) listener so preventDefault()
@@ -265,6 +379,9 @@ export const Header = component$(() => {
     }
   });
 
+  const themeLabel =
+    theme.value === "dark" ? "Switch to light theme" : "Switch to dark theme";
+
   return (
     <>
       <header class={["site-header", { scrolled: scrolled.value }]}>
@@ -277,7 +394,15 @@ export const Header = component$(() => {
             preventdefault:click
           >
             <img
+              class="logo-on-dark"
               src={assetPath("logo.png")}
+              alt="DS logo"
+              width="34"
+              height="32"
+            />
+            <img
+              class="logo-on-light"
+              src={assetPath("logo-ink.png")}
               alt="DS logo"
               width="34"
               height="32"
@@ -295,26 +420,61 @@ export const Header = component$(() => {
               </a>
             ))}
           </nav>
-          <button
-            ref={menuBtnRef}
-            class={["menu-btn", { open: menuOpen.value }]}
-            aria-label={menuOpen.value ? "Close menu" : "Menu"}
-            aria-expanded={menuOpen.value}
-            aria-controls="mobile-menu"
-            onClick$={() => (menuOpen.value = !menuOpen.value)}
-          >
-            <svg
-              class="burger"
-              viewBox="0 0 24 24"
-              width="22"
-              height="22"
-              aria-hidden="true"
+          <div class="header-actions">
+            <button
+              ref={themeBtnRef}
+              class="icon-btn theme-btn"
+              type="button"
+              aria-label={themeLabel}
+              title={themeLabel}
+              onClick$={toggleTheme}
             >
-              <line class="bl-1" x1="3" y1="7" x2="21" y2="7" />
-              <line class="bl-2" x1="3" y1="12" x2="21" y2="12" />
-              <line class="bl-3" x1="3" y1="17" x2="21" y2="17" />
-            </svg>
-          </button>
+              <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <mask id="theme-bite">
+                  <rect width="24" height="24" fill="#fff" />
+                  <circle class="ti-bite" cx="12" cy="12" r="6.5" fill="#000" />
+                </mask>
+                <circle
+                  class="ti-disc"
+                  cx="12"
+                  cy="12"
+                  r="5"
+                  mask="url(#theme-bite)"
+                />
+                <g class="ti-rays">
+                  <line x1="12" y1="2.5" x2="12" y2="4.5" />
+                  <line x1="12" y1="19.5" x2="12" y2="21.5" />
+                  <line x1="2.5" y1="12" x2="4.5" y2="12" />
+                  <line x1="19.5" y1="12" x2="21.5" y2="12" />
+                  <line x1="5.3" y1="5.3" x2="6.7" y2="6.7" />
+                  <line x1="17.3" y1="17.3" x2="18.7" y2="18.7" />
+                  <line x1="5.3" y1="18.7" x2="6.7" y2="17.3" />
+                  <line x1="17.3" y1="6.7" x2="18.7" y2="5.3" />
+                </g>
+              </svg>
+            </button>
+            <button
+              ref={menuBtnRef}
+              class={["icon-btn", "menu-btn", { open: menuOpen.value }]}
+              type="button"
+              aria-label={menuOpen.value ? "Close menu" : "Menu"}
+              aria-expanded={menuOpen.value}
+              aria-controls="mobile-menu"
+              onClick$={() => (menuOpen.value = !menuOpen.value)}
+            >
+              <svg
+                class="burger"
+                viewBox="0 0 24 24"
+                width="22"
+                height="22"
+                aria-hidden="true"
+              >
+                <line class="bl-1" x1="3" y1="7" x2="21" y2="7" />
+                <line class="bl-2" x1="3" y1="12" x2="21" y2="12" />
+                <line class="bl-3" x1="3" y1="17" x2="21" y2="17" />
+              </svg>
+            </button>
+          </div>
         </div>
       </header>
       {/* Always mounted so the veil can animate closed; visibility (in CSS)

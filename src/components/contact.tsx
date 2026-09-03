@@ -12,6 +12,33 @@ import { MaskedWords } from "./masked-words";
 import { SectionHeading } from "./section-heading";
 
 const styles = `
+.contact { position: relative; }
+/* Soft echo of the network render behind the heading, blended into the
+   page like the hero's. Decorative only. */
+.contact::before {
+  content: '';
+  position: absolute;
+  right: -8%;
+  top: -4%;
+  z-index: -1;
+  width: clamp(280px, 40vw, 560px);
+  aspect-ratio: 1;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-image: url(/img/cover-net-dark-1024.webp);
+  background-image: image-set(url(/img/cover-net-dark-1024.avif) type("image/avif"), url(/img/cover-net-dark-1024.webp) type("image/webp"));
+  mix-blend-mode: var(--render-blend);
+  opacity: 0.35;
+  mask-image: radial-gradient(circle at 50% 50%, #000 48%, transparent 70%);
+  pointer-events: none;
+}
+:root[data-theme='light'] .contact::before {
+  background-image: url(/img/cover-net-light-1024.webp);
+  background-image: image-set(url(/img/cover-net-light-1024.avif) type("image/avif"), url(/img/cover-net-light-1024.webp) type("image/webp"));
+}
+@media (min-width: 768px) {
+  .contact::before { opacity: 0.6; }
+}
 .contact-heading {
   font-size: clamp(2.5rem, 9vw, 6.5rem);
   letter-spacing: -0.03em;
@@ -53,7 +80,9 @@ const styles = `
   -webkit-text-stroke: 0;
   background: linear-gradient(
     90deg,
-    var(--accent-hover) 0% 45%,
+    var(--accent-bright) 0%,
+    var(--violet) 22%,
+    var(--accent-2-bright) 45%,
     transparent 55% 100%
   );
   background-size: 220% 100%;
@@ -189,7 +218,7 @@ export const Contact = component$(() => {
 
   return (
     <section class="contact container contact-bottom" ref={root}>
-      <SectionHeading num="04" title="Contact" id="contact" />
+      <SectionHeading num="05" title="Contact" id="contact" />
       <h2 class="contact-heading">
         <MaskedWords text={"Let’s build something."} />
       </h2>
