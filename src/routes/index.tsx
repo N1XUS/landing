@@ -1,11 +1,12 @@
 import { Icon } from "@rivetjs/kit/icon";
 import { ArrowDown, ArrowUpRight } from "lucide";
 import { Letters } from "../components/Letters.tsx";
+import { Mist } from "../components/Mist.tsx";
 import { SmoothScroll } from "../components/SmoothScroll.tsx";
 
 const TITLE = "Denys Severyn, full-stack product engineer";
 const DESCRIPTION =
-  "Full-stack product engineer. Ten years of enterprise interfaces, SaaS platforms, open-source UI and AI features in production.";
+  "Full-stack product engineer with ten years of enterprise platforms, SaaS products, open-source UI and AI features in production.";
 
 export const head = {
   title: TITLE,
@@ -28,42 +29,42 @@ export const head = {
   ],
 };
 
-const INTRO = "I care about how a product works, how it feels, and everything that connects the two.";
+const INTRO = "Founders and enterprise teams bring me their hardest product problems. I design the system, build every layer and ship it.";
 
 // Down the stack, from what people touch to the tools underneath. Each skill names the work that proves it.
 const SKILLS = [
   {
     name: "Interface",
     tools: "TypeScript, Angular, React, Vue, Qwik, Ionic, SCSS, Tailwind CSS",
-    proof: "Components, theming and fixes for SAP's Fundamental NGX, the Angular library behind enterprise products.",
+    proof: "Contributor to SAP Fundamental NGX, the Angular component library enterprise products are built on.",
     url: "https://github.com/SAP/fundamental-ngx",
     label: "Contributions",
   },
   {
     name: "Back end",
     tools: "C#, ASP.NET Core, Node.js, Microservices, Redis, Kafka",
-    proof: "Team lead on Apptimized, an enterprise SaaS platform for application packaging and testing, from .NET services to the product front end.",
+    proof: "Team lead on Apptimized, an enterprise SaaS platform for application packaging and testing, across .NET services and the product front end.",
     url: "https://apptimized.com",
     label: "apptimized.com",
   },
   {
     name: "Delivery",
     tools: "Architecture, APIs, Integrations, E-commerce, Nx, Delivery pipelines",
-    proof: "End to end with founders and product teams: front ends, back-end services and the integrations between them.",
+    proof: "Trusted end to end by founders and product teams: architecture, front ends, back-end services and the integrations that hold them together.",
     url: "https://github.com/N1XUS",
     label: "GitHub",
   },
   {
     name: "AI",
     tools: "Product AI features, AI chat interfaces, MCP servers",
-    proof: "At PeakVentures: building and scaling web products from architecture to interface, and taking AI features from prototype to production.",
+    proof: "Building and scaling web products at PeakVentures, and taking AI features from prototype into production.",
     url: "https://peakventures.co",
     label: "peakventures.co",
   },
   {
     name: "Frameworks",
     tools: "Rust, WebAssembly, Compilers, Signals, Streaming SSR, Resumability",
-    proof: "Author of Rivet, a compiled, resumable JSX framework in alpha: a Rust compiler, 20 npm packages and benchmarks published with the losses.",
+    proof: "Author of Rivet, a web framework built from the compiler up: a Rust compiler running as WebAssembly, resumable JSX and 20 npm packages.",
     url: "https://rivetjs.severyn.pro",
     label: "rivetjs.severyn.pro",
   },
@@ -77,14 +78,16 @@ export default function Home() {
         Skip to skills
       </a>
       <div class="progress" aria-hidden="true" />
-      <img class="threads" src="/threads.svg" alt="" />
+      <Mist />
+      <div class="threads" aria-hidden="true">
+        <img src="/threads.svg" alt="" />
+      </div>
       <div class="bead" aria-hidden="true">
         <div class="ripple-wrap">
+          <div class="core" />
           <div class="ripple" />
         </div>
-        <div class="morph">
-          <div class="flesh" />
-        </div>
+        <div class="morph" />
       </div>
       <header class="top">
         <a class="brand" href="#top">
@@ -114,7 +117,7 @@ export default function Home() {
               </span>
             </p>
             <p class="cue">
-              Full-stack product engineer. Ten years.
+              Full-stack product engineer. Ten years in production.
               <Icon icon={ArrowDown} size={20} />
             </p>
           </div>
@@ -155,7 +158,7 @@ export default function Home() {
       </main>
 
       <footer class="contact" id="contact">
-        <p class="contact-lead">Have something to build?</p>
+        <p class="contact-lead">Got something hard to build?</p>
         <a class="mail" href="mailto:denys@severyn.pro">
           <Letters text="denys@severyn.pro" />
         </a>

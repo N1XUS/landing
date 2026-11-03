@@ -81,8 +81,8 @@ svg {
 }
 
 .progress,
+.mist,
 .threads,
-.intro-threads,
 .bead {
   display: none;
 }
@@ -276,32 +276,33 @@ svg {
       animation-timeline: scroll(root);
     }
 
+    /* The whole line, moving with the page. Fixed so it can fade out above the skill text at every scroll position,
+       on a curve with no point where the fade visibly starts. */
     .threads {
-      display: block;
-      position: absolute;
-      inset: 0 0 auto;
-      z-index: -1;
-      width: 100%;
-      height: 1590svh;
-      pointer-events: none;
-      animation: draw-line linear both;
-      animation-timeline: scroll(root);
-    }
-
-    .intro-threads {
       display: block;
       position: fixed;
       inset: 0;
       z-index: -1;
-      width: 100%;
-      height: 100svh;
+      overflow: hidden;
       pointer-events: none;
-      animation-name: leave, unspool;
-      animation-duration: auto, 2200ms;
-      animation-timing-function: linear, linear;
-      animation-fill-mode: both, both;
-      animation-timeline: scroll(root), auto;
-      animation-range: 0 45svh, normal;
+      mask-image: linear-gradient(
+        black 22%,
+        rgb(0 0 0 / 0.86) 32%,
+        rgb(0 0 0 / 0.62) 42%,
+        rgb(0 0 0 / 0.36) 52%,
+        rgb(0 0 0 / 0.15) 61%,
+        rgb(0 0 0 / 0.04) 68%,
+        transparent 74%
+      );
+      animation: unspool 3000ms linear both;
+    }
+
+    .threads img {
+      display: block;
+      width: 100%;
+      height: 1590svh;
+      animation: pan linear both;
+      animation-timeline: scroll(root);
     }
 
     /* Rides the line; the page's own scroll supplies the rest of the vertical travel. */
@@ -310,10 +311,9 @@ svg {
       position: fixed;
       left: 0;
       top: 0;
-      z-index: 2;
+      z-index: -1;
       width: 0;
       height: 0;
-      mix-blend-mode: difference;
       pointer-events: none;
       animation-name: ride, fly-in;
       animation-duration: auto, 2200ms;
@@ -325,9 +325,20 @@ svg {
     /* Sonar from the resting dot, until the scroll starts. */
     .ripple-wrap {
       position: absolute;
+      z-index: 1;
       animation: leave linear both;
       animation-timeline: scroll(root);
       animation-range: 0 20svh;
+    }
+
+    .core {
+      position: absolute;
+      left: -0.9vmin;
+      top: -0.9vmin;
+      width: 1.8vmin;
+      height: 1.8vmin;
+      border-radius: 50%;
+      background: var(--white);
     }
 
     .ripple {
@@ -342,82 +353,30 @@ svg {
       animation: sonar 3200ms var(--ease) 2200ms infinite;
     }
 
-    .morph {
-      position: absolute;
-      left: -36vmin;
-      top: -36vmin;
-      width: 72vmin;
-      height: 72vmin;
-      filter: blur(6px);
-      animation: pose both;
-      animation-timeline: scroll(root);
-      animation-timing-function: cubic-bezier(0.65, 0, 0.25, 1);
-    }
-
-    /* The body. Scroll sets its form; underneath, it never quite holds still. The periods share no
-       common beat, so the drift doesn't read as a loop or a pulse. Sits inside .morph, so it scales with the shape. */
     .chapter .stage {
       justify-content: flex-end;
     }
 
-    .flesh {
-      position: relative;
+    /* Never drawn: its scroll-driven pose tells src/mist.ts how large and how visible the dust cloud is. */
+    .morph {
+      position: absolute;
+      left: -55vmin;
+      top: -55vmin;
+      width: 110vmin;
+      height: 110vmin;
+      visibility: hidden;
+      animation: pose linear both;
+      animation-timeline: scroll(root);
+    }
+
+    .mist {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
       width: 100%;
       height: 100%;
-      animation:
-        morph both,
-        sway 11s ease-in-out infinite alternate,
-        squash 7s ease-in-out infinite alternate,
-        drift 13s ease-in-out infinite alternate;
-      animation-timeline: scroll(root), auto, auto, auto;
-      animation-timing-function: cubic-bezier(0.65, 0, 0.25, 1), ease-in-out, ease-in-out, ease-in-out;
-    }
-
-    /* Thin at the edges, denser somewhere inside, and that somewhere keeps moving. */
-    .flesh::before {
-      content: "";
-      position: absolute;
-      inset: -25%;
-      background: radial-gradient(
-        circle at 40% 38%,
-        var(--white) 0 24%,
-        rgb(242 242 242 / 0.6) 48%,
-        rgb(242 242 242 / 0.2) 74%
-      );
-      animation: flow 23s linear infinite;
-    }
-
-    @keyframes flow {
-      to {
-        rotate: 360deg;
-      }
-    }
-
-    @keyframes sway {
-      from {
-        rotate: -2.5deg;
-      }
-      to {
-        rotate: 3deg;
-      }
-    }
-
-    @keyframes squash {
-      from {
-        scale: 1.035 0.97;
-      }
-      to {
-        scale: 0.97 1.035;
-      }
-    }
-
-    @keyframes drift {
-      from {
-        translate: -1.5% 1%;
-      }
-      to {
-        translate: 1.5% -1.5%;
-      }
+      pointer-events: none;
     }
 
     .scene {
@@ -436,10 +395,67 @@ svg {
       margin-top: -50svh;
     }
 
-    .contact-lead,
     .foot {
       animation: reveal linear both;
       animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+
+    .contact-lead {
+      --depth: 1.4;
+      animation-name: reveal, drift-in;
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: view(), --scene;
+      animation-range:
+        entry 0% entry 100%,
+        entry 0% entry 100%;
+    }
+
+    /* Parallax: text drifts up through its scene. --parallax is the distance, --depth each block's own multiplier.
+       Uses translate, so it never competes with the reveals, which animate transform. */
+    .scene,
+    .contact {
+      --parallax: 3svh;
+    }
+
+    .big {
+      --depth: 1;
+      animation: drift-out linear both;
+      animation-timeline: --scene;
+      animation-range: contain 0% contain 100%;
+    }
+
+    .words {
+      --depth: 0.8;
+      animation: drift linear both;
+      animation-timeline: --scene;
+      animation-range: contain 0% contain 100%;
+    }
+
+    .name,
+    .tools {
+      animation: drift linear both;
+      animation-timeline: --scene;
+      animation-range: entry 40% contain 80%;
+    }
+
+    .name {
+      --depth: 1;
+    }
+
+    .tools {
+      --depth: 0.6;
+    }
+
+    .detail {
+      --depth: 1.4;
+    }
+
+    .mail {
+      --depth: 1;
+      animation: drift-in linear both;
+      animation-timeline: --scene;
       animation-range: entry 0% entry 100%;
     }
 
@@ -558,13 +574,35 @@ svg {
     }
 
     .detail {
-      animation-name: reveal, conceal;
-      animation-timing-function: linear, linear;
-      animation-fill-mode: both, forwards;
-      animation-timeline: --scene, --scene;
+      animation-name: reveal, conceal, drift;
+      animation-timing-function: linear;
+      animation-fill-mode: both, forwards, both;
+      animation-timeline: --scene;
       animation-range:
         entry 70% contain 12%,
-        contain 56% contain 72%;
+        contain 56% contain 72%,
+        entry 40% contain 80%;
+    }
+
+    @keyframes drift {
+      from {
+        translate: 0 calc(var(--depth) * var(--parallax));
+      }
+      to {
+        translate: 0 calc(var(--depth) * var(--parallax) * -1);
+      }
+    }
+
+    @keyframes drift-in {
+      from {
+        translate: 0 calc(var(--depth) * var(--parallax));
+      }
+    }
+
+    @keyframes drift-out {
+      to {
+        translate: 0 calc(var(--depth) * var(--parallax) * -2);
+      }
     }
 
     @keyframes draw {
