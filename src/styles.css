@@ -1,4 +1,4 @@
-@import "@fontsource-variable/inter-tight/wght.css";
+@import "@fontsource/pt-sans/400.css";
 @import "./morph.css";
 
 :root {
@@ -28,7 +28,7 @@ body {
   background: var(--black);
   color: var(--white);
   isolation: isolate;
-  font: 400 1.125rem/1.5 "Inter Tight Variable", system-ui, sans-serif;
+  font: 400 1.125rem/1.5 "PT Sans", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -235,7 +235,7 @@ svg {
 .mail {
   display: block;
   margin-top: 8px;
-  font-size: min(calc((100vw - 2 * var(--gutter)) * 0.122), 13rem);
+  font-size: min(calc((100vw - 2 * var(--gutter)) * 0.127), 13rem);
   font-weight: 500;
   line-height: 1.06;
   letter-spacing: -0.04em;

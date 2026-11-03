@@ -86,25 +86,28 @@ void main() {
   vec2 near = (frag - nearCenter) / radius;
   vec2 far = (frag - farCenter) / radius;
   vec2 middle = (near + far) * 0.5;
-  // The outline: a band that turns and changes length along the film, torn by noise, so it is never the same blob twice.
-  vec2 shape = rotation(stir * 0.45) * middle * vec2(1.0, 1.6 + 0.5 * sin(stir * 0.9));
-  shape += 0.5 * (vec2(fbm(middle * 1.1 + time * 0.03), fbm(middle * 1.1 + 5.0 - time * 0.025)) - 0.5);
-  float edge = 1.0 - smoothstep(0.2, 1.05, length(shape) + 0.9 * (fbm(middle * 1.6 + time * 0.03) - 0.5));
-  if (edge > 0.0 && opacity > 0.0) {
-    // Twisted more towards the rim and pushed by slow noise, so no two grains keep their distance for long.
-    float twist = turn + 0.4 * sin(time * 0.07) * length(near);
-    near = rotation(twist) * near;
-    far = rotation(twist * 0.6 + time * 0.012) * far;
-    near += 0.05 * (vec2(fbm(near * 2.0 + time * 0.05), fbm(near * 2.0 + 4.0 - time * 0.05)) - 0.5);
-    float fold = folds((near + far) * 0.7 + vec2(stir * 2.3, -stir * 1.7), time);
-    float density = smoothstep(0.38, 0.62, fold);
-    // Haze under the grains: the fine dust too small to see one by one, which gives the cloud its volume.
-    float haze = smoothstep(0.32, 0.8, fold);
-    // Deep grains lag and stay fine, near ones lead, and the nearest are large, dim and out of focus.
-    float cloud = grains(rotation(0.5) * far * 72.0, density, time, 0.16, 0.24, 0.3)
-      + 1.3 * grains(rotation(-0.7) * near * 34.0 + 11.0, density * 0.5, time + 9.0, 0.1, 0.28, 0.2)
-      + 0.35 * grains(rotation(1.9) * near * 9.0 + 5.0, density * 0.1, time + 4.0, 0.12, 0.3, 0.0);
-    alpha += (1.15 * cloud * (0.35 + 0.65 * density) + 0.13 * haze) * edge * opacity * (1.0 + 0.9 * light);
+  // Noise is the expensive part. Past this reach the outline is empty whatever the noise does, so most of the window skips it.
+  if (opacity > 0.0 && length(middle) < 1.9) {
+    // The outline: a band that turns and changes length along the film, torn by noise, so it is never the same blob twice.
+    vec2 shape = rotation(stir * 0.45) * middle * vec2(1.0, 1.6 + 0.5 * sin(stir * 0.9));
+    shape += 0.5 * (vec2(fbm(middle * 1.1 + time * 0.03), fbm(middle * 1.1 + 5.0 - time * 0.025)) - 0.5);
+    float edge = 1.0 - smoothstep(0.2, 1.05, length(shape) + 0.9 * (fbm(middle * 1.6 + time * 0.03) - 0.5));
+    if (edge > 0.004) {
+      // Twisted more towards the rim and pushed by slow noise, so no two grains keep their distance for long.
+      float twist = turn + 0.4 * sin(time * 0.07) * length(near);
+      near = rotation(twist) * near;
+      far = rotation(twist * 0.6 + time * 0.012) * far;
+      near += 0.05 * (vec2(fbm(near * 2.0 + time * 0.05), fbm(near * 2.0 + 4.0 - time * 0.05)) - 0.5);
+      float fold = folds((near + far) * 0.7 + vec2(stir * 2.3, -stir * 1.7), time);
+      float density = smoothstep(0.38, 0.62, fold);
+      // Haze under the grains: the fine dust too small to see one by one, which gives the cloud its volume.
+      float haze = smoothstep(0.32, 0.8, fold);
+      // Deep grains lag and stay fine, near ones lead, and the nearest are large, dim and out of focus.
+      float cloud = grains(rotation(0.5) * far * 72.0, density, time, 0.16, 0.24, 0.3)
+        + 1.3 * grains(rotation(-0.7) * near * 34.0 + 11.0, density * 0.5, time + 9.0, 0.1, 0.28, 0.2)
+        + 0.35 * grains(rotation(1.9) * near * 9.0 + 5.0, density * 0.1, time + 4.0, 0.12, 0.3, 0.0);
+      alpha += (1.15 * cloud * (0.35 + 0.65 * density) + 0.13 * haze) * edge * opacity * (1.0 + 0.9 * light);
+    }
   }
 
   // A trace of noise, so the haze doesn't fall into bands on black.
@@ -174,7 +177,11 @@ export function startMist(canvas: HTMLCanvasElement) {
   let frames = 0;
   let spent = 0;
   const start = performance.now();
-  let last = start;
+  let lastTick = start;
+  let lastDraw = start;
+  let drewLast = false;
+  // The dust drifts too slowly to need every frame: 60 fps while anything is moving, 30 at rest.
+  let settling = true;
   let raf = 0;
   // Scrolling carries the field along a heading that swings across the page, up at first, then out to either side and
   // back. Scrolling back retraces it, and at rest it keeps drifting the same way.
@@ -184,17 +191,23 @@ export function startMist(canvas: HTMLCanvasElement) {
 
   const draw = (now: number) => {
     raf = requestAnimationFrame(draw);
-    const delta = now - last;
-    last = now;
-    if (delta < 200) {
-      spent += delta;
+    // The gap after a drawn frame is what shows a GPU falling behind. Skipped frames say nothing about it.
+    const gap = now - lastTick;
+    lastTick = now;
+    if (drewLast && gap < 200) {
+      spent += gap;
       if (++frames === 40) {
         if (spent / frames > 28 && quality > 0.4) quality *= 0.8;
         frames = 0;
         spent = 0;
       }
     }
-    const seconds = Math.min(delta, 100) / 1000;
+    drewLast = false;
+    const moving = settling || scrollY !== lastScroll;
+    if (now - lastDraw < (moving ? 15 : 32)) return;
+    const seconds = Math.min(now - lastDraw, 100) / 1000;
+    lastDraw = now;
+    drewLast = true;
 
     const scale = Math.min(devicePixelRatio, 2) * quality;
     const [width, height] = [Math.round(canvas.clientWidth * scale), Math.round(canvas.clientHeight * scale)];
@@ -226,6 +239,11 @@ export function startMist(canvas: HTMLCanvasElement) {
     pointer.x = follow(pointer.x, pointer.targetX, 9, seconds);
     pointer.y = follow(pointer.y, pointer.targetY, 9, seconds);
     pointer.strength = follow(pointer.strength, pointer.target, 3, seconds);
+    settling =
+      Math.abs(cloud.farX - left) + Math.abs(cloud.farY - top) > 0.5 ||
+      Math.abs(cloud.radius - targetRadius) > 0.5 ||
+      Math.abs(pointer.strength - pointer.target) > 0.01 ||
+      Math.abs(pointer.x - pointer.targetX) + Math.abs(pointer.y - pointer.targetY) > 0.5;
 
     const shortest = Math.min(canvas.clientWidth, canvas.clientHeight);
     gl.uniform2f(uniform("nearCenter"), cloud.nearX * scale, height - cloud.nearY * scale);
