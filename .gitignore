@@ -47,3 +47,6 @@ lerna-debug.log*
 # Source renders/screenshots (large PNGs); optimized outputs live in public/img
 /media
 /tmp
+
+# Rivet
+.rivet

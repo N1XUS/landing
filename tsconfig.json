@@ -1,26 +1,21 @@
 {
   "compilerOptions": {
-    "allowJs": true,
-    "target": "ES2020",
-    "module": "ES2022",
-    "lib": ["es2022", "DOM", "WebWorker", "DOM.Iterable"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "@builder.io/qwik",
+    "target": "es2023",
+    "lib": ["es2023", "dom", "dom.iterable"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true,
-    "moduleResolution": "Bundler",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "incremental": true,
-    "isolatedModules": true,
-    "outDir": "tmp",
     "noEmit": true,
-    "paths": {
-      "~/*": ["./src/*"]
-    },
-    /* if you do not use CSS modules, remove this line and delete the typescript-plugin-css-modules module from package.json */
-    "plugins": [{ "name": "typescript-plugin-css-modules" }]
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    // TypeScript 6+ defaults this to true (TS2882 on `import "./styles.css"`); Vite handles side-effect imports.
+    "noUncheckedSideEffectImports": false,
+    "jsx": "preserve",
+    "jsxImportSource": "@rivetjs/runtime",
+    "types": ["node"],
+    "plugins": [{ "name": "@rivetjs/typescript-plugin" }]
   },
-  "include": ["src", "./*.d.ts", "./*.config.ts"]
+  "include": ["src", "*.ts", ".rivet/routes.d.ts"]
 }

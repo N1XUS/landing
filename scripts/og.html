@@ -1,38 +1,9 @@
 <!doctype html>
-<!-- Social card template. Rendered by hand: open this file in headless
-     Chrome at 1200x630 (2x), screenshot, then `sharp` it down to
-     public/og.jpg (JPEG, width 1200). Opened via file:// so fonts and the
-     render resolve relative to this file. -->
-<html lang="en">
-<head>
-<meta charset="utf-8" />
-<style>
-  @font-face { font-family: 'SG'; src: url('../node_modules/@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2') format('woff2'); font-weight: 300 700; }
-  @font-face { font-family: 'JB'; src: url('../node_modules/@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2') format('woff2'); font-weight: 100 800; }
-  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; }
-  body { position: relative; background: #171717; color: #fafafa; font-family: 'SG', sans-serif; -webkit-font-smoothing: antialiased; }
-  .grid { position: absolute; inset: 0; background-image: repeating-linear-gradient(90deg, rgba(82,110,211,0.07) 0 1px, transparent 1px 120px); }
-  .glow { position: absolute; left: -300px; top: -300px; width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(circle, rgba(82,110,211,0.18) 0%, transparent 68%); }
-  .render { position: absolute; inset: 0; background: url('../media/renders/hero-dark.png') no-repeat right -140px center / auto 118%; mix-blend-mode: screen; -webkit-mask-image: linear-gradient(90deg, transparent 38%, #000 60%); mask-image: linear-gradient(90deg, transparent 38%, #000 60%); }
-  .copy { position: absolute; left: 72px; top: 118px; }
-  .eyebrow { display: flex; align-items: center; gap: 12px; font-family: 'JB', monospace; font-size: 18px; letter-spacing: 0.12em; color: #8eaaf0; margin-bottom: 28px; }
-  .eyebrow svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
-  .name { font-size: 136px; font-weight: 700; line-height: 0.92; letter-spacing: -0.02em; text-transform: uppercase; }
-  .name .l2 { display: block; margin-left: 96px; color: #6887e4; }
-  .sub { margin-top: 30px; font-family: 'JB', monospace; font-size: 17px; letter-spacing: 0.1em; text-transform: uppercase; color: #a3a3a3; }
-  .url { position: absolute; left: 72px; bottom: 56px; font-family: 'JB', monospace; font-size: 20px; letter-spacing: 0.08em; color: #fafafa; }
-  .url span { color: #fea882; }
-</style>
-</head>
-<body>
-  <div class="grid"></div>
-  <div class="glow"></div>
-  <div class="render"></div>
-  <div class="copy">
-    <div class="eyebrow"><svg viewBox="0 0 24 24"><path d="M4 12h7"/><path d="M13 5l7 7-7 7"/></svg><span>full-stack product engineer</span></div>
-    <div class="name"><span>DENYS</span><span class="l2">SEVERYN</span></div>
-    <div class="sub">Platforms · UI systems · AI features</div>
-  </div>
-  <div class="url">severyn<span>.pro</span></div>
-</body>
-</html>
+<!-- Social card. Render at 1200x630 with headless Chrome, convert to public/og.jpg (see README). -->
+<html lang="en"><head><meta charset="utf-8"><style>
+@font-face { font-family: "T"; src: url("../node_modules/@fontsource-variable/inter-tight/files/inter-tight-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; }
+html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #000; color: #f2f2f2; font-family: "T", sans-serif; }
+.big { position: absolute; left: 56px; bottom: 112px; font-size: 136px; line-height: .98; font-weight: 500; letter-spacing: -.035em; }
+.sub { position: absolute; left: 56px; bottom: 52px; font-size: 28px; color: #9a9a9a; }
+.dot { position: absolute; right: 64px; top: -40px; width: 340px; height: 340px; border-radius: 50%; background: #f2f2f2; }
+</style></head><body><div class="dot"></div><div class="big">Denys<br>Severyn</div><div class="sub">Full-stack product engineer</div></body></html>

@@ -1,0 +1,667 @@
+@import "@fontsource-variable/inter-tight/wght.css";
+@import "./morph.css";
+
+:root {
+  color-scheme: dark;
+  --black: #000;
+  --white: #f2f2f2;
+  --dim: #9a9a9a;
+  --line: #2b2b2b;
+  --gutter: clamp(16px, 4vw, 52px);
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: clip;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  position: relative;
+  margin: 0;
+  background: var(--black);
+  color: var(--white);
+  isolation: isolate;
+  font: 400 1.125rem/1.5 "Inter Tight Variable", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p,
+dl,
+dd {
+  margin: 0;
+}
+
+a {
+  color: inherit;
+}
+
+svg {
+  display: block;
+  flex: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--white);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip {
+  position: fixed;
+  left: var(--gutter);
+  top: 8px;
+  z-index: 4;
+  padding: 8px 16px;
+  background: var(--white);
+  color: var(--black);
+  transform: translateY(-200%);
+}
+
+.skip:focus {
+  transform: none;
+}
+
+.progress,
+.threads,
+.intro-threads,
+.bead {
+  display: none;
+}
+
+.top {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px var(--gutter);
+  mix-blend-mode: difference;
+}
+
+.top a {
+  display: inline-block;
+  padding-block: 8px;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.top nav {
+  display: flex;
+  gap: clamp(16px, 3vw, 36px);
+}
+
+.top nav a {
+  background: linear-gradient(currentColor, currentColor) 0 calc(100% - 6px) / 0 1px no-repeat;
+  transition: background-size 180ms var(--ease);
+}
+
+.top nav a:hover {
+  background-size: 100% 1px;
+}
+
+/* Base layout: a plain, readable page. The film is added on top below. */
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100svh;
+  padding: 88px var(--gutter) 36px;
+  overflow: clip;
+}
+
+.big {
+  font-size: clamp(3.5rem, 11.5vw, 12.5rem);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+}
+
+.say {
+  display: block;
+}
+
+.letter-word,
+.letter {
+  display: inline-block;
+}
+
+.cue {
+  position: absolute;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--dim);
+}
+
+.statement {
+  position: relative;
+}
+
+.words {
+  max-width: 19em;
+  font-size: clamp(2.25rem, 6.4vw, 7rem);
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -0.028em;
+}
+
+.name {
+  margin-block: 0 clamp(12px, 1.6vw, 24px);
+  font-size: clamp(3.25rem, 13vw, 14rem);
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.tools {
+  max-width: 24em;
+  margin-bottom: clamp(24px, 3.4vw, 48px);
+  color: var(--dim);
+  font-size: clamp(1.5rem, 3.4vw, 3.5rem);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.024em;
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 16px clamp(24px, 5vw, 72px);
+}
+
+.text {
+  max-width: 34em;
+  font-size: clamp(1.125rem, 1.7vw, 1.5rem);
+  line-height: 1.36;
+  text-wrap: pretty;
+}
+
+.go {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  margin-top: -8px;
+  font-weight: 500;
+  text-underline-offset: 0.25em;
+  white-space: nowrap;
+}
+
+.go svg {
+  transition: translate 180ms var(--ease);
+}
+
+.go:hover svg {
+  translate: 2px -2px;
+}
+
+.contact {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  min-height: 100svh;
+  padding: 88px var(--gutter) 24px;
+}
+
+.contact-lead {
+  font-size: clamp(1.25rem, 2.2vw, 2rem);
+}
+
+.mail {
+  display: block;
+  margin-top: 8px;
+  font-size: min(calc((100vw - 2 * var(--gutter)) * 0.122), 13rem);
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.mail:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 0.04em;
+  text-underline-offset: 0.08em;
+}
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-top: clamp(36px, 6vw, 72px);
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--dim);
+}
+
+/* The film. Everything runs from the scroll position in CSS, and only where the browser supports it.
+   All movement follows the scroll: each scene rises over the last, which melts away as the next one arrives. */
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .progress {
+      display: block;
+      position: fixed;
+      inset: auto 0 0;
+      z-index: 3;
+      height: 2px;
+      background: var(--white);
+      transform-origin: left;
+      animation: draw linear both;
+      animation-timeline: scroll(root);
+    }
+
+    .threads {
+      display: block;
+      position: absolute;
+      inset: 0 0 auto;
+      z-index: -1;
+      width: 100%;
+      height: 1590svh;
+      pointer-events: none;
+      animation: draw-line linear both;
+      animation-timeline: scroll(root);
+    }
+
+    .intro-threads {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      width: 100%;
+      height: 100svh;
+      pointer-events: none;
+      animation-name: leave, unspool;
+      animation-duration: auto, 2200ms;
+      animation-timing-function: linear, linear;
+      animation-fill-mode: both, both;
+      animation-timeline: scroll(root), auto;
+      animation-range: 0 45svh, normal;
+    }
+
+    /* Rides the line; the page's own scroll supplies the rest of the vertical travel. */
+    .bead {
+      display: block;
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 2;
+      width: 0;
+      height: 0;
+      mix-blend-mode: difference;
+      pointer-events: none;
+      animation-name: ride, fly-in;
+      animation-duration: auto, 2200ms;
+      animation-timing-function: linear, linear;
+      animation-fill-mode: both, both;
+      animation-timeline: scroll(root), auto;
+    }
+
+    /* Sonar from the resting dot, until the scroll starts. */
+    .ripple-wrap {
+      position: absolute;
+      animation: leave linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 20svh;
+    }
+
+    .ripple {
+      position: absolute;
+      left: -1.8vmin;
+      top: -1.8vmin;
+      width: 3.6vmin;
+      height: 3.6vmin;
+      border: 1px solid var(--white);
+      border-radius: 50%;
+      opacity: 0;
+      animation: sonar 3200ms var(--ease) 2200ms infinite;
+    }
+
+    .morph {
+      position: absolute;
+      left: -36vmin;
+      top: -36vmin;
+      width: 72vmin;
+      height: 72vmin;
+      filter: blur(6px);
+      animation: pose both;
+      animation-timeline: scroll(root);
+      animation-timing-function: cubic-bezier(0.65, 0, 0.25, 1);
+    }
+
+    /* The body. Scroll sets its form; underneath, it never quite holds still. The periods share no
+       common beat, so the drift doesn't read as a loop or a pulse. Sits inside .morph, so it scales with the shape. */
+    .chapter .stage {
+      justify-content: flex-end;
+    }
+
+    .flesh {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      animation:
+        morph both,
+        sway 11s ease-in-out infinite alternate,
+        squash 7s ease-in-out infinite alternate,
+        drift 13s ease-in-out infinite alternate;
+      animation-timeline: scroll(root), auto, auto, auto;
+      animation-timing-function: cubic-bezier(0.65, 0, 0.25, 1), ease-in-out, ease-in-out, ease-in-out;
+    }
+
+    /* Thin at the edges, denser somewhere inside, and that somewhere keeps moving. */
+    .flesh::before {
+      content: "";
+      position: absolute;
+      inset: -25%;
+      background: radial-gradient(
+        circle at 40% 38%,
+        var(--white) 0 24%,
+        rgb(242 242 242 / 0.6) 48%,
+        rgb(242 242 242 / 0.2) 74%
+      );
+      animation: flow 23s linear infinite;
+    }
+
+    @keyframes flow {
+      to {
+        rotate: 360deg;
+      }
+    }
+
+    @keyframes sway {
+      from {
+        rotate: -2.5deg;
+      }
+      to {
+        rotate: 3deg;
+      }
+    }
+
+    @keyframes squash {
+      from {
+        scale: 1.035 0.97;
+      }
+      to {
+        scale: 0.97 1.035;
+      }
+    }
+
+    @keyframes drift {
+      from {
+        translate: -1.5% 1%;
+      }
+      to {
+        translate: 1.5% -1.5%;
+      }
+    }
+
+    .scene {
+      view-timeline: --scene;
+    }
+
+    .scene > .stage {
+      position: sticky;
+      top: 0;
+      height: 100svh;
+    }
+
+    .scene + .scene,
+    #skills,
+    .contact {
+      margin-top: -50svh;
+    }
+
+    .contact-lead,
+    .foot {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 100%;
+    }
+
+    #skills .scene:first-of-type {
+      margin-top: 0;
+    }
+
+    .statement {
+      height: 340svh;
+    }
+
+    .intro {
+      height: 300svh;
+    }
+
+    .chapter {
+      height: 240svh;
+    }
+
+    .cue {
+      animation-name: reveal, leave;
+      animation-duration: 1000ms, auto;
+      animation-delay: 1700ms, 0s;
+      animation-timing-function: var(--ease), linear;
+      animation-fill-mode: both, forwards;
+      animation-timeline: auto, --scene;
+      animation-range: normal, contain 0% contain 6%;
+    }
+
+    .cue svg {
+      animation: bob 2000ms ease-in-out 2700ms infinite;
+    }
+
+    .top {
+      animation: appear 1000ms linear 1500ms both;
+    }
+
+    /* Letters come in one after another: --from is when the first starts, --sweep how long the
+       stagger runs, --step how long each letter takes, --out the exit. All are % of the scene's range. */
+    .letter {
+      animation-name: reveal-letter, conceal-letter;
+      animation-timing-function: linear, linear;
+      animation-fill-mode: both, forwards;
+      animation-timeline: --scene, --scene;
+      --at: calc(var(--from) + var(--sweep) * var(--i) / var(--n));
+      animation-range:
+        contain var(--at) contain calc(var(--at) + var(--step)),
+        contain var(--out) contain calc(var(--out) + 16%);
+    }
+
+    .say-1 .letter {
+      animation-duration: 1100ms, auto;
+      animation-delay: calc(600ms + var(--i) * 70ms), 0s;
+      animation-timing-function: var(--ease), linear;
+      animation-timeline: auto, --scene;
+      animation-range: normal, contain var(--out) contain calc(var(--out) + 16%);
+    }
+
+    .say {
+      --out: 72%;
+      --step: 8%;
+    }
+
+    .say-2 {
+      --from: 6%;
+      --sweep: 18%;
+    }
+
+    .say-3 {
+      --from: 32%;
+      --sweep: 22%;
+    }
+
+    .words {
+      --from: 2%;
+      --sweep: 58%;
+      --step: 7%;
+      --out: 74%;
+    }
+
+    .name {
+      --from: 40%;
+      --sweep: 42%;
+      --step: 18%;
+      --out: 66%;
+    }
+
+    .tools {
+      --from: 58%;
+      --sweep: 30%;
+      --step: 12%;
+      --out: 66%;
+    }
+
+    .name .letter,
+    .tools .letter {
+      animation-range:
+        entry var(--at) entry calc(var(--at) + var(--step)),
+        contain var(--out) contain calc(var(--out) + 16%);
+    }
+
+    .mail {
+      --from: 30%;
+      --sweep: 50%;
+      --step: 20%;
+    }
+
+    .contact {
+      view-timeline: --scene;
+    }
+
+    .mail .letter {
+      animation-name: reveal-letter;
+      animation-fill-mode: both;
+      animation-range: entry var(--at) entry calc(var(--at) + var(--step));
+    }
+
+    .detail {
+      animation-name: reveal, conceal;
+      animation-timing-function: linear, linear;
+      animation-fill-mode: both, forwards;
+      animation-timeline: --scene, --scene;
+      animation-range:
+        entry 70% contain 12%,
+        contain 56% contain 72%;
+    }
+
+    @keyframes draw {
+      from {
+        transform: scaleX(0);
+      }
+    }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+      }
+    }
+
+    @keyframes sonar {
+      from {
+        opacity: 0.7;
+        transform: scale(1);
+      }
+      70%,
+      to {
+        opacity: 0;
+        transform: scale(6);
+      }
+    }
+
+    @keyframes bob {
+      50% {
+        transform: translateY(6px);
+      }
+    }
+
+    @keyframes leave {
+      to {
+        opacity: 0;
+      }
+    }
+
+    /* Every text entrance: blur, opacity and a small rise. Exits continue upward. */
+    @keyframes reveal {
+      from {
+        filter: blur(12px);
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        filter: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @keyframes reveal-letter {
+      from {
+        filter: blur(0.16em);
+        opacity: 0;
+        transform: translateY(0.14em);
+      }
+      to {
+        filter: none;
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    @keyframes conceal-letter {
+      to {
+        filter: blur(0.16em);
+        opacity: 0;
+        transform: translateY(-0.14em);
+      }
+    }
+
+    @keyframes conceal {
+      to {
+        filter: blur(12px);
+        opacity: 0;
+        transform: translateY(-16px);
+      }
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  .detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .go {
+    margin-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}

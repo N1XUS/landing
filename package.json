@@ -1,52 +1,36 @@
 {
   "name": "severyn-portfolio",
-  "description": "Portfolio landing site for Denys Severyn — Qwik, Lenis, GSAP",
-  "engines": {
-    "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
-  },
-  "engines-annotation": "Mostly required by sharp which needs a Node-API v9 compatible runtime",
+  "description": "Portfolio landing site for Denys Severyn, built with Rivet",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "build": "qwik build",
-    "build.client": "vite build",
-    "build.server": "qwik check-client src dist && vite build -c adapters/static/vite.config.ts",
-    "build.preview": "vite build --ssr src/entry.preview.tsx",
-    "build.types": "tsc --incremental --noEmit",
-    "deploy": "echo 'Run \"npm run qwik add\" to install a server adapter'",
-    "dev": "vite --mode ssr",
-    "dev.debug": "node --inspect-brk ./node_modules/vite/bin/vite.js --mode ssr --force",
-    "fmt": "prettier --write .",
-    "fmt.check": "prettier --check .",
-    "lint": "eslint \"src/**/*.ts*\"",
-    "preview": "qwik build preview && vite preview --open",
-    "start": "vite --open --mode ssr",
-    "qwik": "qwik",
-    "test": "vitest run",
-    "images": "node scripts/images.mjs"
+  "engines": {
+    "node": ">=24"
   },
-  "devDependencies": {
-    "@builder.io/qwik": "^1.20.0",
-    "@builder.io/qwik-city": "^1.20.0",
-    "@eslint/js": "^9",
-    "@fontsource-variable/inter": "^5.2.8",
-    "@fontsource-variable/jetbrains-mono": "^5.3.0",
-    "@fontsource-variable/space-grotesk": "^5.2.10",
-    "@types/node": "20.19.0",
-    "eslint": "9.32.0",
-    "eslint-plugin-qwik": "^1.20.0",
-    "globals": "16.4.0",
-    "prettier": "3.6.2",
-    "typescript": "5.4.5",
-    "typescript-eslint": "8.38.0",
-    "typescript-plugin-css-modules": "latest",
-    "undici": "*",
-    "vite": "7.3.1",
-    "vite-tsconfig-paths": "^4.2.1",
-    "vitest": "^4.1.10"
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && vite build --ssr && node prerender.js",
+    "preview": "node serve.js",
+    "check": "rivet sync && rivet-check && tsgo",
+    "morph": "node scripts/morph.mjs"
   },
   "dependencies": {
-    "gsap": "^3.15.0",
-    "lenis": "^1.3.25"
+    "@rivetjs/kit": "0.1.0-alpha.4",
+    "@rivetjs/reactivity": "0.1.0-alpha.4",
+    "@rivetjs/router": "0.1.0-alpha.4",
+    "@rivetjs/runtime": "0.1.0-alpha.4",
+    "lenis": "^1.3.27",
+    "lucide": "^1.52.0"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter-tight": "^5.3.0",
+    "@rivetjs/compiler": "0.1.0-alpha.4",
+    "@rivetjs/devtools": "0.1.0-alpha.4",
+    "@rivetjs/language-core": "0.1.0-alpha.4",
+    "@rivetjs/typescript-plugin": "0.1.0-alpha.4",
+    "@types/node": "^24.0.0",
+    "@typescript/native-preview": "7.0.0-dev.20260707.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.2"
   }
 }
